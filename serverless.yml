@@ -1,0 +1,16 @@
+service: aws-sqs-task
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+
+functions:
+  lambda-sqs:
+    handler: index.handler
+
+package:
+  exclude:
+    - test.js
+    - assets/difference2.csv
+    - logging.js
