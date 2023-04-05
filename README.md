@@ -42,7 +42,7 @@ functions:
 After successful deployment, you can invoke the deployed function by using the following command:
 
 ```bash
-serverless invoke --function hello
+serverless invoke --function lambda-sqs
 ```
 
 Which should result in response similar to the following:
@@ -59,7 +59,7 @@ Which should result in response similar to the following:
 You can invoke your function locally by using the following command:
 
 ```bash
-serverless invoke local --function hello
+serverless invoke local --function lambda-sqs
 ```
 
 Which should result in response similar to the following:
