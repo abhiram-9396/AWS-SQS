@@ -60,7 +60,6 @@ exports.handler = async (event) => {
     .then((msg) => console.log(msg))
     .catch((err) => console.log(err));
 
-    
   const logMessages = async () => {
 
     let messageReceiveCount = 0;
@@ -101,7 +100,7 @@ exports.handler = async (event) => {
             console.log('duplicate found');
           }
           
-          console.log(`Message ${messageReceiveCount} received success: ${userId}`);
+          console.log(`Message received success: ${body}`);
         });
       } catch (err) {
         console.error(`Error receiving message: ${err}`);
@@ -109,8 +108,17 @@ exports.handler = async (event) => {
     }
   };
 
-  await logMessages()
-    .then(() => console.log('Finished fetching messages', users.length))
-  	.catch((err) => console.error(`Error fetching messages: ${err}`));
+  const workers = [];
+  for (let i = 0; i < 10; i++) {
+    workers.push(logMessages());
+  }
+  
+  async function receive(){
+    await Promise.all(workers)
+  }
+
+  await receive()
+    .then(() => console.log('Finished fetching messages'))
+    .catch((err) => console.error(`Error fetching messages: ${err}`));
 
 };

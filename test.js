@@ -132,7 +132,7 @@ const sqs = new AWS.SQS({ region: 'us-east-1' });
 const queueUrl = 'https://sqs.us-east-1.amazonaws.com/272467826288/csv-parse';
 
 handler = async (event) => {
-  const stream = fs.createReadStream('./assets/difference.csv');
+  const stream = fs.createReadStream('./assets/difference2.csv');
   const parserStream = stream.pipe(csv());
   
   const upload = new Promise((resolve, reject) => {
@@ -235,10 +235,18 @@ handler = async (event) => {
     }
   };
 
-  await logMessages()
-    .then(() => console.log('Finished fetching messages', users.length))
-  	.catch((err) => console.error(`Error fetching messages: ${err}`));
+  const workers = [];
+  for (let i = 0; i < 10; i++) {
+    workers.push(logMessages());
+  }
+  
+  async function receive(){
+    await Promise.all(workers)
+  }
 
+  await receive()
+    .then(() => console.log('Finished fetching messages', users.length))
+    .catch((err) => console.error(`Error fetching messages: ${err}`));
 };
 
 handler();
