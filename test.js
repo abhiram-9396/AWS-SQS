@@ -212,7 +212,12 @@ handler = async (event) => {
         if (!data.Messages) {
           console.log('No messages to log');
         }
-  
+
+        if(users.length !== 0 && users.length % 1000 == 0)
+        {
+          await sleep(60000);
+        }
+        
         data.Messages.forEach((message) => {
           messageReceiveCount +=1 ;
           
@@ -242,6 +247,13 @@ handler = async (event) => {
   
   async function receive(){
     await Promise.all(workers)
+  }
+
+  function sleep(ms) {
+    return new Promise((resolve) => {
+      console.log('pausing for 1 minute')
+      setTimeout(resolve, ms);
+    });
   }
 
   await receive()

@@ -72,6 +72,11 @@ exports.handler = async (event) => {
     
     const numberOfMessage = Number(attributes.Attributes.ApproximateNumberOfMessages);
     
+    if(users.length !== 0 && users.length % 1000 == 0)
+    {
+      await sleep(60000);
+    }
+
     while(users.length < numberOfMessage)
     {
       try {
@@ -100,7 +105,7 @@ exports.handler = async (event) => {
             console.log('duplicate found');
           }
           
-          console.log(`Message received success: ${body}`);
+          console.log(`Message received success: ${message.Body}`);
         });
       } catch (err) {
         console.error(`Error receiving message: ${err}`);
@@ -115,6 +120,13 @@ exports.handler = async (event) => {
   
   async function receive(){
     await Promise.all(workers)
+  }
+
+  function sleep(ms) {
+    return new Promise((resolve) => {
+      console.log('pausing for 1 minute')
+      setTimeout(resolve, ms);
+    });
   }
 
   await receive()

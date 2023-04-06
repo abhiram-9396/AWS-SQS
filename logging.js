@@ -80,6 +80,8 @@ const logMessages = async () => {
 				WaitTimeSeconds: 5,
 			}).promise();
 
+			console.log(data);
+
 			if (!data.Messages) {
 				console.log('No messages to log');
 			}
