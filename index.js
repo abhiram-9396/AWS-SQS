@@ -4,6 +4,12 @@ const fs = require('fs');
 
 const sqs = new AWS.SQS({ region: 'us-east-1' });
 const queueUrl = 'https://sqs.us-east-1.amazonaws.com/272467826288/csv-parse';
+const batchSize = 100;
+const batchDelay = 60 * 1000;
+const Moengourl = 'https://api-01.moengage.com/v1/transition/Z0B7P4VD8CIRHC8OVU4SLUTQ?app_id=Z0B7P4VD8CIRHC8OVU4SLUTQ';
+const username = 'Z0B7P4VD8CIRHC8OVU4SLUTQ';
+const password = 'ZXliU7KyrAVSbBBuynsNQddC';
+const basicAuth = 'Basic ' + Buffer.from(username + ':' + password).toString('base64');
 
 exports.handler = async (event) => {
   const stream = fs.createReadStream('./assets/difference.csv');
@@ -131,6 +137,60 @@ exports.handler = async (event) => {
 
   await receive()
     .then(() => console.log('Finished fetching messages'))
+    .catch((err) => console.error(`Error fetching messages: ${err}`));
+
+  
+  const moengageUpload = async () => {
+    let messageCount = 0;
+    messages = [];
+
+    fs.createReadStream('./assets/difference.csv')
+    .pipe(csv())
+    .on('data', async (row) => {
+      messages.push(row);
+      messageCount += 1;
+      if (messages.length % batchSize == 0) {
+        if(messageCount%1000 == 0)
+        {
+          await sendMeongageBatch(messages.splice(0, batchSize));
+          await sleep(batchDelay);
+        }
+        await sendMeongageBatch(messages.splice(0, batchSize));
+      }
+    })
+    .on('end', async () => {
+      if (messages.length > 0) {
+        await sendMeongageBatch(messages);
+      }
+    });
+  
+    async function sendMeongageBatch(batch) {
+      if(batch.length > 0)
+			{
+        try {
+          const response = await axios.post(Moengourl,
+            {
+              type : "transition",
+              elements : batch
+            },
+            {
+              headers : {
+                'Authorization' : basicAuth,
+                'Content-Type' : 'application/json'
+              }
+            }
+            )
+            console.log(response.data);
+            return response.data;
+        } catch (error) {
+          console.error('Failed to send batch:', error.response);
+        }
+      }
+    }
+  }
+
+  await moengageUpload()
+    .then(() => console.log('Finished upload to moengage'))
     .catch((err) => console.error(`Error fetching messages: ${err}`));
 
 };
