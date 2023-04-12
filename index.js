@@ -147,7 +147,15 @@ exports.handler = async (event) => {
     fs.createReadStream('./assets/difference.csv')
     .pipe(csv())
     .on('data', async (row) => {
-      messages.push(row);
+      const configRow = {
+				type : "customer",
+				customer_id : row.user_id,
+				attributes : {
+					mss_length : row.mss_length,
+					maturity_store_segment : row.maturity_store_segment
+				}
+			}
+      messages.push(configRow);
       messageCount += 1;
       if (messages.length % batchSize == 0) {
         if(messageCount%1000 == 0)
